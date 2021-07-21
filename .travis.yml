@@ -1,0 +1,24 @@
+sudo: required
+language: generic
+
+services:
+  - docker
+
+before_install:
+  -docker build -t miketheodorou/docker-complex-client -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true miketheodorou/docker-complex-client npm test
+
+after_success:
+  - docker build -t miketheodorou/docker-complex-client ./client
+  - docker build -t miketheodorou/docker-complex-nginx ./nginx
+  - docker build -t miketheodorou/docker-complex-server ./server
+  - docker build -t miketheodorou/docker-complex-worker ./worker
+  # Log in to Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Push images to Docker hub
+  - docker push miketheodorou/docker-complex-client
+  - docker push miketheodorou/docker-complex-nginx
+  - docker push miketheodorou/docker-complex-server
+  - docker push miketheodorou/docker-complex-worker
